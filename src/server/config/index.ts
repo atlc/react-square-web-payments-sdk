@@ -8,5 +8,3 @@ export const square = {
     apiVersion: process.env.SQUARE_API_VERSION!,
     locationId: process.env.SQUARE_LOCATION_ID!
 };
-
-console.log({ appId: square.appId, locationId: square.locationId });

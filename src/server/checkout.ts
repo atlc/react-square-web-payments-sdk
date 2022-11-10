@@ -1,5 +1,6 @@
 import * as express from "express";
-import { Client, CreatePaymentRequest, Environment, Payment } from "square";
+import { Client, CreatePaymentRequest, Environment, Money } from "square";
+import { TokenResult } from "@square/web-payments-sdk-types";
 import { square } from "./config";
 import { randomUUID } from "crypto";
 
@@ -12,16 +13,26 @@ const { paymentsApi } = client;
 
 const router = express.Router();
 
-router.post("/", async (req, res) => {
-    const { sourceId } = req.body;
+interface CartItem {
+    id: number;
+    quantity: number;
+    price: number;
+}
 
-    const total = 22.5; // generated from DB logic
+router.post("/", async (req, res) => {
+    const { sourceId, cart } = req.body as { sourceId: TokenResult; cart: CartItem[] };
+
+    let sum = 0;
+
+    cart.forEach(ci => {
+        sum += ci.price * ci.quantity;
+    });
 
     try {
         const body: CreatePaymentRequest = {
-            sourceId,
+            sourceId: sourceId.token!,
             idempotencyKey: randomUUID(),
-            amountMoney: { amount: BigInt(total * 100) }
+            amountMoney: { currency: "USD", amount: BigInt(sum * 100) }
         };
 
         const lol = await paymentsApi.createPayment(body);

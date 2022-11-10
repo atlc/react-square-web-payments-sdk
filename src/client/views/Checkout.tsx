@@ -1,7 +1,8 @@
-import * as React from 'react';
-import { useState, useEffect } from 'react';
-import LocalStorageUtils from '../services/localStorage'
-import * as ReactSquareWeb from 'react-square-web-payments-sdk';
+import * as React from "react";
+import { useState, useEffect } from "react";
+import LocalStorageUtils from "../services/localStorage";
+import * as ReactSquareWeb from "react-square-web-payments-sdk";
+import { TokenResult } from "@square/web-payments-sdk-types";
 
 const MyPaymentForm = () => {
     const [amount, setAmount] = useState(0);
@@ -15,11 +16,40 @@ const MyPaymentForm = () => {
         let price = 0;
 
         items.forEach(item => {
-            price += item.price * item.quantity
+            price += item.price * item.quantity;
         });
 
         setAmount(price);
-    }, [])
+    }, []);
+
+    const handleProcessPayment = async (token: TokenResult) => {
+        if (token.errors || !token.token) {
+            alert("Could not process payment");
+            console.error(token.errors);
+            return;
+        }
+
+        try {
+            const res = await fetch("/checkout", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ sourceId: token, cart: LocalStorageUtils.retrieveCartData() })
+            });
+
+            const data = await res.json();
+
+            if (!res.ok) {
+                alert("Could not process payment");
+                return;
+            }
+
+            window.open(data.url, "_blank");
+
+            LocalStorageUtils.clearOutCart();
+        } catch (error) {
+            alert("Could not process payment");
+        }
+    };
 
     return (
         <ReactSquareWeb.PaymentForm
@@ -33,7 +63,8 @@ const MyPaymentForm = () => {
              * request. The result will be a valid credit card or wallet token, or an error.
              */
             cardTokenizeResponseReceived={(token, buyer) => {
-                console.info({ token, buyer });
+                // console.info({ token, buyer });
+                handleProcessPayment(token);
             }}
             /**
              * This function enable the Strong Customer Authentication (SCA) flow
@@ -42,28 +73,27 @@ const MyPaymentForm = () => {
              * the chance of fraudulent transactions.
              */
             createVerificationDetails={() => ({
-                amount: '1.00',
+                amount: "1.00",
                 /* collected from the buyer */
                 billingContact: {
-                    addressLines: ['123 Main Street', 'Apartment 1'],
-                    familyName: 'Doe',
-                    givenName: 'John',
-                    countryCode: 'GB',
-                    city: 'London',
+                    addressLines: ["123 Main Street", "Apartment 1"],
+                    familyName: "Doe",
+                    givenName: "John",
+                    countryCode: "GB",
+                    city: "London"
                 },
-                currencyCode: 'GBP',
-                intent: 'CHARGE',
+                currencyCode: "GBP",
+                intent: "CHARGE"
             })}
             /**
              * Identifies the location of the merchant that is taking the payment.
              * Obtained from the Square Application Dashboard - Locations tab.
              */
-            locationId="LTGCAG10B7PXZ"
-        >
+            locationId="LTGCAG10B7PXZ">
             <h1>Subtotal is: {amount}</h1>
             <ReactSquareWeb.CreditCard />
         </ReactSquareWeb.PaymentForm>
     );
-}
+};
 
 export default MyPaymentForm;
