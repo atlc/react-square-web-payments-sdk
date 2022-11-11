@@ -57,7 +57,7 @@ const MyPaymentForm = () => {
              * Identifies the calling form with a verified application ID generated from
              * the Square Application Dashboard.
              */
-            applicationId="sandbox-sq0idb-uEZBE-_abRvIBxcmGG___A"
+            applicationId="sq0idp-2n7XFhJiIdjNBsJ4V7FbBA"
             /**
              * Invoked when payment form receives the result of a tokenize generation
              * request. The result will be a valid credit card or wallet token, or an error.
@@ -89,7 +89,7 @@ const MyPaymentForm = () => {
              * Identifies the location of the merchant that is taking the payment.
              * Obtained from the Square Application Dashboard - Locations tab.
              */
-            locationId="LTGCAG10B7PXZ">
+            locationId="9WGEW5ZWQXAQM">
             <h1>Subtotal is: {amount}</h1>
             <ReactSquareWeb.CreditCard />
         </ReactSquareWeb.PaymentForm>

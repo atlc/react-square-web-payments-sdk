@@ -6,7 +6,7 @@ import { randomUUID } from "crypto";
 
 const client = new Client({
     accessToken: square.accessToken,
-    environment: Environment.Sandbox
+    environment: Environment.Production
 });
 
 const { paymentsApi } = client;
@@ -36,6 +36,9 @@ router.post("/", async (req, res) => {
         };
 
         const lol = await paymentsApi.createPayment(body);
+
+        console.log({ lol });
+
         const url = lol.result.payment?.receiptUrl;
 
         res.status(200).json({ message: "Noice, we did it. Gotta loicense for that payment processor, do ya?", url });
